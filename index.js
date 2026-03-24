@@ -1,20 +1,23 @@
-require('dotenv').config();
 const express = require('express');
-const connectDB = require('./config/db');
+const { PrismaClient } = require('@prisma/client');
 
 const app = express();
-
-// connecter la DB
-connectDB();
+const prisma = new PrismaClient();
 
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('aaaaaaaaaAAAAAAAAAAAAAAAAAAAAAAAAH');
+// Créer un user
+app.post('/users', async (req, res) => {
+  const user = await prisma.user.create({
+    data: req.body
+  });
+  res.json(user);
 });
 
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, () => {
-  console.log(`Serveur lancé sur http://localhost:${PORT}`);
+// Lire tous les users
+app.get('/users', async (req, res) => {
+  const users = await prisma.user.findMany();
+  res.json(users);
 });
+
+app.listen(3000, () => console.log('Server running on http://localhost:3000'));

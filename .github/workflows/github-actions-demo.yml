@@ -1,18 +1,70 @@
-name: GitHub Actions Demo
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
+name: Pipeline CI/CD Cyber SaaS Ticketing
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
 jobs:
-  Explore-GitHub-Actions:
+  # --- BLOC : BUILD & TEST ---
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - name: Check out repository code
-        uses: actions/checkout@v5
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - run: echo "🍏 This job's status is ${{ job.status }}."
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js # Adapte si tu utilises Python, Java, etc.
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Build (Installation des dépendances)
+        run: npm install
+        
+      - name: Test (Unitaires)
+        run: npm test
+
+  # --- BLOC : SNYK (Scan Dépendances) ---
+  security-snyk:
+    needs: build-and-test # On ne scanne que si les tests passent
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Snyk to check for vulnerabilities
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high # Bloque si une faille critique est trouvée
+
+  # --- BLOC : SONARQUBE / SONARCLOUD (Code Quality) ---
+  code-quality:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # --- BLOC : OWASP ZAP (Scan Dynamique) ---
+  security-zap:
+    needs: [security-snyk, code-quality]
+    runs-on: ubuntu-latest
+    steps:
+      - name: ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: 'https://ton-app-de-test.com' # Remplace par l'URL de ton staging
+          fail_action: true # Bloque la pipeline si ZAP trouve des erreurs
+
+  # --- BLOC : VALIDATION & DÉPLOIEMENT ---
+  deploy:
+    needs: security-zap
+    runs-on: ubuntu-latest
+    environment: production # Nécessite une approbation manuelle dans GitHub Settings
+    steps:
+      - name: Déploiement sécurisé
+        run: echo "Déploiement en cours sur le Cloud..."

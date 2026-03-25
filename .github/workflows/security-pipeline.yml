@@ -41,6 +41,9 @@ jobs:
       # --- SONARQUBE (Qualité et Bugs) ---
       - name: Scan SonarQube
         uses: sonarsource/sonarqube-scan-action@master
+        with:
+          args: >
+            -Dsonar.qualitygate.wait=false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Obligatoire pour Sonar
           SONAR_TOKEN: ${{ secrets.SONARQUBE_API }}

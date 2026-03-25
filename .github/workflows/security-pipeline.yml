@@ -1,0 +1,61 @@
+name: Pipeline DevSecOps SaaS Jira
+
+# Déclenchement sur toutes les branches pour le "Shift Left" (sécurité précoce)
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  # ÉTAPE 1 : BUILD, TEST ET SÉCURITÉ
+  security-and-quality:
+    runs-on: ubuntu-latest
+    steps:
+      # --- COMMIT ---
+      - name: Checkout du code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important pour SonarQube (historique du code)
+
+      # --- BUILD ---
+      - name: Installation des dépendances (Node.js)
+        run: npm install
+
+      # --- TEST ---
+      - name: Exécution des tests unitaires
+        run: npm test
+
+      # --- SNYK (Scan de vulnérabilités des dépendances) ---
+      - name: Scan Snyk
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_API }}
+
+      # --- GITGUARDIAN (Détection de secrets/clés oubliées) ---
+      - name: Scan GitGuardian
+        uses: GitGuardian/ggshield-action@master
+        env:
+          GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API }}
+
+      # --- SONARQUBE (Qualité et Bugs) ---
+      - name: Scan SonarQube
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONARQUBE_API }}
+          # Note : Si tu utilises SonarCloud, ajoute l'URL ci-dessous. 
+          # Sinon, il utilise par défaut celle configurée dans ton compte.
+          # SONAR_HOST_URL: https://sonarcloud.io 
+
+  # ÉTAPE 2 : DÉPLOIEMENT (Validation)
+  deploy:
+    # On ne déploie QUE si l'étape précédente est un succès COMPLET
+    needs: security-and-quality
+    # On ne déploie QUE si on est sur la branche 'main'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Déploiement sécurisé
+        run: |
+          echo "✅ Toutes les étapes de sécurité ont été validées."
+          echo "🚀 Déploiement du SaaS en cours..."

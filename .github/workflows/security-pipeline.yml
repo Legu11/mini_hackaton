@@ -42,6 +42,7 @@ jobs:
       - name: Scan SonarQube
         uses: sonarsource/sonarqube-scan-action@master
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Obligatoire pour Sonar
           SONAR_TOKEN: ${{ secrets.SONARQUBE_API }}
           # Note : Si tu utilises SonarCloud, ajoute l'URL ci-dessous. 
           # Sinon, il utilise par défaut celle configurée dans ton compte.

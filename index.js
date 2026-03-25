@@ -1,23 +1,15 @@
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
-
 const app = express();
-const prisma = new PrismaClient();
 
 app.use(express.json());
 
-// Créer un user
-app.post('/users', async (req, res) => {
-  const user = await prisma.user.create({
-    data: req.body
-  });
-  res.json(user);
-});
+const userRoutes = require('./modules/user/user.controller');
 
-// Lire tous les users
-app.get('/users', async (req, res) => {
-  const users = await prisma.user.findMany();
-  res.json(users);
-});
+app.use('/users', userRoutes);
+app.use('/tickets', ticketRoutes);
+app.use('/packets', packetRoutes);
 
-app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+
+app.listen(3000, () => {
+  console.log('Server running');
+});

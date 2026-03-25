@@ -16,4 +16,33 @@ generator client {
 model User {
   id Int @id @default(autoincrement())
   name String
+  email String @unique
+  password String
+  roleId Int
+  active Boolean @default(true)
+  tickets_created Ticket[] @relation("UserTickets")
+  packets_created Packet[] @relation("UserPackets")
+}
+
+model Ticket {
+  id Int @id @default(autoincrement())
+  title String
+  description String?
+  authorId Int
+  packetId Int
+  creationDate DateTime @default(now())
+  lastUpdateDate DateTime @updatedAt
+  author User @relation(fields: [authorId], references: [id], name: "UserTickets")
+  packet Packet @relation(fields: [packetId], references: [id])
+}
+
+model Packet {
+  id Int @id @default(autoincrement())
+  title String
+  description String?
+  authorId Int
+  creationDate DateTime @default(now())
+  lastUpdateDate DateTime @updatedAt
+  author User @relation(fields: [authorId], references: [id], name: "UserPackets")
+  tickets Ticket[]
 }

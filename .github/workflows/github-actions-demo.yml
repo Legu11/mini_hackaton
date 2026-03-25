@@ -1,70 +1,49 @@
-name: Pipeline CI/CD Cyber SaaS Ticketing
+name: CI/CD DevSecOps Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+    branches: ["main"]
 
 jobs:
-  # --- BLOC : BUILD & TEST ---
-  build-and-test:
+  pipeline:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Node.js # Adapte si tu utilises Python, Java, etc.
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          
-      - name: Build (Installation des dépendances)
-        run: npm install
-        
-      - name: Test (Unitaires)
-        run: npm test
 
-  # --- BLOC : SNYK (Scan Dépendances) ---
-  security-snyk:
-    needs: build-and-test # On ne scanne que si les tests passent
-    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high # Bloque si une faille critique est trouvée
 
-  # --- BLOC : SONARQUBE / SONARCLOUD (Code Quality) ---
-  code-quality:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    # 1. Récupérer le code
+    - name: Checkout
+      uses: actions/checkout@v3
 
-  # --- BLOC : OWASP ZAP (Scan Dynamique) ---
-  security-zap:
-    needs: [security-snyk, code-quality]
-    runs-on: ubuntu-latest
-    steps:
-      - name: ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.12.0
-        with:
-          target: 'https://ton-app-de-test.com' # Remplace par l'URL de ton staging
-          fail_action: true # Bloque la pipeline si ZAP trouve des erreurs
+    # 2. Installer dépendances
+    - name: Install dependencies
+      run: npm install
 
-  # --- BLOC : VALIDATION & DÉPLOIEMENT ---
-  deploy:
-    needs: security-zap
-    runs-on: ubuntu-latest
-    environment: production # Nécessite une approbation manuelle dans GitHub Settings
-    steps:
-      - name: Déploiement sécurisé
-        run: echo "Déploiement en cours sur le Cloud..."
+    # 3. Build
+    - name: Build
+      run: npm run build
+
+    # 4. Tests
+    - name: Run tests
+      run: npm test
+
+    # 5. Snyk (dépendances)
+    - name: Snyk scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_API: ${{ secrets.SNYK_API }}
+
+    # 6. SonarQube (SAST)
+    - name: SonarQube scan
+      uses: sonarsource/sonarqube-scan-action@master
+      env:
+        SONARQUBE_API: ${{ secrets.SONARQUBE_API }}
+
+    # 7. GitGuardian (secrets)
+    - name: GitGuardian scan
+      uses: GitGuardian/ggshield-action@master
+      env:
+        GITGUARDIAN_API: ${{ secrets.GITGUARDIAN_API }}
+
+    # 8. Déploiement (simulation)
+    - name: Deploy
+      run: echo "Déploiement sécurisé"

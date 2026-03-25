@@ -1,4 +1,4 @@
-name: Pipeline DevSecOps SaaS Jira
+name: Pipeline DevSecOps SaaS Jira (Snyk Powered)
 
 on:
   push:
@@ -7,63 +7,47 @@ on:
     branches: ["**"]
 
 jobs:
-  security-and-quality:
-    name: Analyse Sécurité et Qualité
+  security:
+    name: Analyse Sécurité Globale
     runs-on: ubuntu-latest
     
     steps:
-      # 1. Récupération du code source
       - name: Checkout du code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Important pour que GitGuardian et Codacy voient l'historique
 
-      # 2. Préparation de l'environnement Node.js
       - name: Installation de Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # 3. Installation des dépendances (Nécessaire pour Snyk)
       - name: Installation des dépendances
-        run: |
-          if [ -f package-lock.json ]; then
-            npm ci
-          else
-            npm install
-          fi
+        run: npm install
 
-      # 4. Étape de test (On évite l'erreur "no test specified")
-      - name: Exécution des tests unitaires
-        run: echo "Simulation des tests terminée avec succès"
-
-      # --- ÉTAPE 1 : SNYK (Sécurité des bibliothèques externes) ---
-      - name: Scan Snyk (SCA)
+      # --- ÉTAPE 1 : SNYK OPEN SOURCE (Bibliothèques externes) ---
+      - name: Scan Snyk Open Source (SCA)
         uses: snyk/actions/node@master
-        continue-on-error: true # Permet de continuer si Snyk trouve des failles non critiques
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_API }}
 
-      # --- ÉTAPE 2 : CODACY (Analyse de ton code source JS/TS) ---
-      # Remplace SonarQube pour la qualité et les vulnérabilités de code
-      - name: Scan Codacy (SAST)
-        uses: codacy/codacy-analysis-cli-action@master
-        with:
-          project-token: ${{ secrets.CODACY_API }} # Ton secret GitHub
-          upload: true
-          max-allowed-issues: 2147483647 # Ne bloque pas la pipeline si ton code n'est pas encore parfait
+      # --- ÉTAPE 2 : SNYK CODE (Ton code source - Remplace Sonar/Codacy) ---
+      - name: Scan Snyk Code (SAST)
+        run: |
+          npm install -g snyk
+          snyk code test --sarif-file-output=snyk-code.sarif
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_API }}
 
-      # --- ÉTAPE 3 : GITGUARDIAN (Détection de fuites de secrets) ---
+      # --- ÉTAPE 3 : GITGUARDIAN (Secrets) ---
       - name: Scan GitGuardian (Secrets)
         uses: GitGuardian/ggshield-action@master
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API }}
 
-  deploy-check:
-    name: Validation Déploiement
-    needs: security-and-quality
-    if: github.ref == 'refs/heads/main'
+  deploy-validation:
+    needs: security
     runs-on: ubuntu-latest
     steps:
-      - name: Rapport Final
-        run: echo "Le SaaS Jira est sécurisé et prêt pour la production !"
+      - name: Rapport
+        run: echo "Analyse Snyk + GitGuardian terminée pour le SaaS Jira."

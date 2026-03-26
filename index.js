@@ -20,9 +20,6 @@ app.get('/users', async (req, res) => {
   res.json(users);
 });
 
-const PORT = process.env.PORT || 3000;
-const HOST = '0.0.0.0'; 
-
-app.listen(PORT, HOST, () => {
-    console.log(`Mon application est prête sur http://${HOST}:${PORT}`);
+app.listen(3000, () => {
+    console.log("Server is running on port 3000");
 });

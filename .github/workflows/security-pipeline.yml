@@ -56,6 +56,10 @@ jobs:
         # On attend 15 secondes que le serveur soit debout
         run: sleep 15
 
+      # --- ÉTAPE : INSTALLATION DES DÉPENDANCES ET WAIT-ON ---
+      - name: Install dependencies
+        run: npm install && npm install -g wait-on 
+
     # --- ÉTAPE FIX : DROITS D'ÉCRITURE ---
       - name: Fix Permissions
         run: chmod -R 777 .
@@ -64,7 +68,7 @@ jobs:
       - name: Démarrage de l'application
         run: |
           node index.js &
-          sleep 30
+          wait-on http://localhost:3000 -t 60000 # Attend jusqu'à 60s que l'app réponde
 
       # On lance le scan de sécurité
       - name: OWASP ZAP Baseline Scan

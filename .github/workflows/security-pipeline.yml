@@ -56,15 +56,21 @@ jobs:
         # On attend 15 secondes que le serveur soit debout
         run: sleep 15
 
-     # --- ÉTAPE 5 : OWASP ZAP (DAST) ---
+     # --- FIX PERMISSIONS POUR ZAP ---
+      - name: Préparation des permissions
+        run: |
+          touch zap.yaml
+          chmod 777 . # Donne les droits d'écriture au dossier courant pour le conteneur Docker
+
+      # --- ÉTAPE 5 : OWASP ZAP (DAST) ---
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # Puisque l'action utilise --network=host, localhost:3000 est accessible
-          target: 'http://localhost:3000' 
-          # On remplace -v par -d ou on laisse vide
-          cmd_options: '-d'
+          target: 'http://localhost:3000'
+          # On retire -d pour l'instant pour éviter d'autres conflits de syntaxe
+          # et on laisse l'action gérer le reste
+          cmd_options: ''
           
   validation:
     needs: security

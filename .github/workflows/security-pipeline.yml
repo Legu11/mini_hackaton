@@ -56,15 +56,15 @@ jobs:
         # On attend 15 secondes que le serveur soit debout
         run: sleep 15
 
-      # --- ÉTAPE 5 : OWASP ZAP (DAST) ---
+     # --- ÉTAPE 5 : OWASP ZAP (DAST) ---
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # Remplacer localhost par l'IP de l'hôte Docker
-          target: 'http://172.17.0.1:3000' 
-          # On ajoute l'option pour autoriser les connexions hors conteneur
-          cmd_options: '-v'
+          # Puisque l'action utilise --network=host, localhost:3000 est accessible
+          target: 'http://localhost:3000' 
+          # On remplace -v par -d ou on laisse vide
+          cmd_options: '-d'
           
   validation:
     needs: security

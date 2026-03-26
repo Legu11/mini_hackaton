@@ -20,9 +20,9 @@ app.get('/users', async (req, res) => {
   res.json(users);
 });
 
-const PORT = 3000;
-const HOST = '0.0.0.0'; // Indispensable pour être vu par Docker
+const PORT = process.env.PORT || 3000;
+const HOST = '0.0.0.0'; 
 
 app.listen(PORT, HOST, () => {
-    console.log(`Serveur actif sur http://${HOST}:${PORT}`);
+    console.log(`Mon application est prête sur http://${HOST}:${PORT}`);
 });

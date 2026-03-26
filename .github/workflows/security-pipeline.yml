@@ -35,12 +35,14 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_API }}
 
-      # --- ÉTAPE 2 : DEEPSOURCE (Analyse Qualité & Failles / SAST) ---
-      # On utilise ton secret DEEPSOURCE_API (le DSN sous forme de lien)
+     # --- ÉTAPE 2 : DEEPSOURCE (Analyse Qualité & Failles) ---
       - name: DeepSource Analysis
         run: |
           curl https://deepsource.io/cli | sh
-          ./bin/deepsource report --token ${{ secrets.DEEPSOURCE_API }}
+          # On utilise la variable d'environnement DEEPSOURCE_DSN attendue par le CLI
+          ./bin/deepsource report
+        env:
+          DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_API }} # On lie ton secret au bon nom de variable
         continue-on-error: true
 
       # --- ÉTAPE 3 : GITGUARDIAN (Détection de Secrets) ---

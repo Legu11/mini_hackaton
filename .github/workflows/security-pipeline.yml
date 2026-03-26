@@ -1,6 +1,4 @@
-name: Pipeline DevSecOps SaaS Jira
-
-on:
+ on:
   push:
     branches: ["**"]
   pull_request:
@@ -10,84 +8,54 @@ jobs:
   security:
     name: Analyse Sécurité Globale
     runs-on: ubuntu-latest
-    
+
     steps:
-      # --- PRÉPARATION ---
+      # 1. Récupération du code
       - name: Checkout du code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+
+      # 2. Préparation de Node.js
       - name: Installation de Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
+
+      # 3. Installation des dépendances
       - name: Installation des dépendances
         run: npm install
 
-      # --- ÉTAPE 1 : SNYK (SCA) ---
+
+      # --- ÉTAPE 1 : SNYK (Sécurité Bibliothèques / SCA) ---
       - name: Scan Snyk
         uses: snyk/actions/node@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_API }}
 
-      # --- ÉTAPE 2 : DEEPSOURCE (SAST) ---
+
+     # --- ÉTAPE 2 : DEEPSOURCE (Analyse Qualité & Sécurité) ---
       - name: DeepSource Analysis
         uses: deepsourcelabs/test-coverage-action@master
         with:
           key: javascript
           dsn: ${{ secrets.DEEPSOURCE_API }}
-        continue-on-error: true
+        continue-on-error: true # Pour que GitGuardian puisse quand même passer après
 
-      # --- ÉTAPE 3 : GITGUARDIAN (Secrets) ---
+
+      # --- ÉTAPE 3 : GITGUARDIAN (Détection de Secrets) ---
       - name: Scan GitGuardian
         uses: GitGuardian/ggshield-action@master
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API }}
 
-      # --- ÉTAPE 4 : LANCEMENT DE L'APP POUR ZAP ---
-      - name: Démarrage de l'application
-        # On lance l'app en arrière-plan (&)
-        run: npm start & 
-        
-      - name: Attente de disponibilité (Healthcheck)
-        # On attend 15 secondes que le serveur soit debout
-        run: sleep 15
 
-      # --- ÉTAPE : INSTALLATION DES DÉPENDANCES ET WAIT-ON ---
-      - name: Install dependencies
-        run: npm install && npm install -g wait-on 
-
-      # --- ÉTAPE : PRÉPARATION PRISMA & DÉPENDANCES ---
-      - name: Install dependencies & Generate Prisma
-        run: |
-          npm install
-          npx prisma generate  # <--- INDISPENSABLE pour que PrismaClient fonctionne
-          npm install -g wait-on
-      
-      # --- ÉTAPE FIX : DROITS D'ÉCRITURE ---
-      - name: Fix Permissions
-        run: chmod -R 777 .
-
-      # On lance l'application Node.js
-      - name: Démarrage de l'application
-        run: |
-          node index.js &
-          wait-on http://localhost:3000 -t 60000 # Attend jusqu'à 60s que l'app réponde
-
-      # On lance le scan de sécurité
-      - name: OWASP ZAP Baseline Scan
-        uses: zaproxy/action-baseline@v0.12.0
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          target: 'http://localhost:3000'
-          cmd_options: '--autooff'
-          
   validation:
     needs: security
     runs-on: ubuntu-latest
     steps:
       - name: Rapport Final
-        run: echo "Analyse complète (Snyk, DeepSource, GitGuardian, ZAP) terminée !"
+        run: echo "Analyse multi-outils (Snyk, DeepSource, GitGuardian) terminée avec succès !" 

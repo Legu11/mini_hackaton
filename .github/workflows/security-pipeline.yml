@@ -60,13 +60,18 @@ jobs:
       - name: Fix Permissions
         run: chmod -R 777 .
 
-      # --- ÉTAPE 5 : OWASP ZAP (DAST) ---
+      # On lance l'application Node.js
+      - name: Démarrage de l'application
+        run: |
+          node index.js &
+          sleep 30
+
+      # On lance le scan de sécurité
       - name: OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           target: 'http://localhost:3000'
-          # --autooff empêche la création du fichier zap.yaml qui cause l'erreur de permission
           cmd_options: '--autooff'
           
   validation:

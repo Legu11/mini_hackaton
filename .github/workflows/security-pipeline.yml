@@ -61,11 +61,11 @@ jobs:
         uses: zaproxy/action-baseline@v0.12.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          # On cible le localhost du runner
-          target: 'http://localhost:3000' 
-          # Option cruciale pour que le conteneur ZAP voit le localhost du runner
-          cmd_options: '-v' 
-
+          # Remplacer localhost par l'IP de l'hôte Docker
+          target: 'http://172.17.0.1:3000' 
+          # On ajoute l'option pour autoriser les connexions hors conteneur
+          cmd_options: '-v'
+          
   validation:
     needs: security
     runs-on: ubuntu-latest

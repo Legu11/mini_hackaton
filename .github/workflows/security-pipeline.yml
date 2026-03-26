@@ -35,7 +35,6 @@ jobs:
         uses: snyk/actions/node@master
         with:
           args: --file=package.json
-        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_API }}
 

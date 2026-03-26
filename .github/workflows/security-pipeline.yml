@@ -35,15 +35,13 @@ jobs:
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_API }}
 
-     # --- ÉTAPE 2 : DEEPSOURCE (Analyse Qualité & Failles) ---
+     # --- ÉTAPE 2 : DEEPSOURCE (Analyse Qualité & Sécurité) ---
       - name: DeepSource Analysis
-        run: |
-          curl https://deepsource.io/cli | sh
-          # On utilise la variable d'environnement DEEPSOURCE_DSN attendue par le CLI
-          ./bin/deepsource report
-        env:
-          DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_API }} # On lie ton secret au bon nom de variable
-        continue-on-error: true
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: javascript
+          dsn: ${{ secrets.DEEPSOURCE_API }}
+        continue-on-error: true # Pour que GitGuardian puisse quand même passer après
 
       # --- ÉTAPE 3 : GITGUARDIAN (Détection de Secrets) ---
       - name: Scan GitGuardian

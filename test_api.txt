@@ -1,0 +1,1 @@
+MY_FAKE_KEY = "sk_test_51MzXzzL2p6VjR8zN0000000000"

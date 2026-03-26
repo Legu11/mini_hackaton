@@ -12,46 +12,63 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      # 1. Récupération du code
+      # --- PRÉPARATION ---
       - name: Checkout du code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      # 2. Préparation de Node.js
       - name: Installation de Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      # 3. Installation des dépendances
       - name: Installation des dépendances
         run: npm install
 
-      # --- ÉTAPE 1 : SNYK (Sécurité Bibliothèques / SCA) ---
+      # --- ÉTAPE 1 : SNYK (SCA) ---
       - name: Scan Snyk
         uses: snyk/actions/node@master
         continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_API }}
 
-     # --- ÉTAPE 2 : DEEPSOURCE (Analyse Qualité & Sécurité) ---
+      # --- ÉTAPE 2 : DEEPSOURCE (SAST) ---
       - name: DeepSource Analysis
         uses: deepsourcelabs/test-coverage-action@master
         with:
           key: javascript
           dsn: ${{ secrets.DEEPSOURCE_API }}
-        continue-on-error: true # Pour que GitGuardian puisse quand même passer après
+        continue-on-error: true
 
-      # --- ÉTAPE 3 : GITGUARDIAN (Détection de Secrets) ---
+      # --- ÉTAPE 3 : GITGUARDIAN (Secrets) ---
       - name: Scan GitGuardian
         uses: GitGuardian/ggshield-action@master
         env:
           GITGUARDIAN_API_KEY: ${{ secrets.GITGUARDIAN_API }}
+
+      # --- ÉTAPE 4 : LANCEMENT DE L'APP POUR ZAP ---
+      - name: Démarrage de l'application
+        # On lance l'app en arrière-plan (&)
+        run: npm start & 
+        
+      - name: Attente de disponibilité (Healthcheck)
+        # On attend 15 secondes que le serveur soit debout
+        run: sleep 15
+
+      # --- ÉTAPE 5 : OWASP ZAP (DAST) ---
+      - name: OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # On cible le localhost du runner
+          target: 'http://localhost:3000' 
+          # Option cruciale pour que le conteneur ZAP voit le localhost du runner
+          cmd_options: '-v' 
 
   validation:
     needs: security
     runs-on: ubuntu-latest
     steps:
       - name: Rapport Final
-        run: echo "Analyse multi-outils (Snyk, DeepSource, GitGuardian) terminée avec succès !"
+        run: echo "Analyse complète (Snyk, DeepSource, GitGuardian, ZAP) terminée !"

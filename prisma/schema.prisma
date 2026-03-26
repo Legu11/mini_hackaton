@@ -18,21 +18,23 @@ model User {
   name String
   email String @unique
   password String
-  roleId Int
+  role Role @default(TESTEUR)
   active Boolean @default(true)
-  tickets_created Ticket[] @relation("UserTickets")
-  packets_created Packet[] @relation("UserPackets")
+  tickets_created Ticket[]
+  packets_created Packet[]
 }
 
 model Ticket {
   id Int @id @default(autoincrement())
   title String
   description String?
-  authorId Int
-  packetId Int
+  statut Statut @default(EN_COURS)
+  priorite Priorite @default(MOYENNE)
   creationDate DateTime @default(now())
   lastUpdateDate DateTime @updatedAt
-  author User @relation(fields: [authorId], references: [id], name: "UserTickets")
+  authorId Int
+  author User @relation(fields: [authorId], references: [id])
+  packetId Int
   packet Packet @relation(fields: [packetId], references: [id])
 }
 
@@ -41,8 +43,29 @@ model Packet {
   title String
   description String?
   authorId Int
+  statut Statut @default(EN_COURS)
   creationDate DateTime @default(now())
   lastUpdateDate DateTime @updatedAt
-  author User @relation(fields: [authorId], references: [id], name: "UserPackets")
+  author User @relation(fields: [authorId], references: [id])
   tickets Ticket[]
+}
+
+enum Statut {
+  EN_COURS
+  A_FAIRE
+  RESOLU
+  EN_REVUE
+  }
+
+enum Role {
+  ADMIN
+  CHEF_PROJET
+  DEV
+  TESTEUR
+}
+
+enum Priorite {
+  CRITIQUE
+  HAUTE
+  MOYENNE
 }

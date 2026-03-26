@@ -21,10 +21,6 @@ Un ticket appartient à un packet: doit récupérer le packet_id
 Relations importantes :
 Ticket → User (récupérer l'auteur)
 Ticket → Packet
-Ticket → Status
-Ticket → Priority
-Ticket → Type
-
 
 ## Module Packets
 
@@ -32,4 +28,5 @@ Permissions:
 - Visible par tous les roles (admin, chef, dev, testeur)
 - modifier / créer : admin, chef, dev
 - supprimer : admin, chef
+
 

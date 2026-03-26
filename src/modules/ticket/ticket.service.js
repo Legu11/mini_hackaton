@@ -1,3 +1,5 @@
+import db from "../prisma/client.js"
+
 // créer un ticket
     // vérifier que l'user existe et qu'il a les permissions nécessaires
     // demander le nom, la description, le statut, la priorité, le type, le packet

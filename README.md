@@ -1,6 +1,9 @@
 2 dev : Thomas, Robin
-1 réseau : William 
-2 cyber : Eyza, Arda 
+
+1 réseau : William
+
+2 cyber : Eyza, Arda
+
 1 chef de projet: Leyla
 
 ## Cahier des charges – Application de gestion de tickets

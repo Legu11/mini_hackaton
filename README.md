@@ -154,13 +154,16 @@ Voici la liste de permissions :
 
 # Schéma de l’infrastructure AWS du SaaS
 
-![archi_aws_secureticket.png](attachment:81a448fd-9d82-4405-a6b5-eefcfed40403:archi_aws_secureticket.png)
+<img width="6129" height="4439" alt="archi_aws_secureticket" src="https://github.com/user-attachments/assets/58af5293-82bb-4838-bae5-a3e72935c4bf" />
+
 
 ## Document explicatif de l’infrastructure :
 
-[SecureTicket.pdf](attachment:19b885e5-13d2-4b87-a346-52eb9a56a577:SecureTicket.pdf)
+[SecureTicket.pdf](https://github.com/user-attachments/files/26298793/SecureTicket.pdf)
+
 
 ---
 
 # Schéma de la pipeline CI/CD
+
 <img width="241" height="927" alt="Capture d&#39;écran 2026-03-27 091130" src="https://github.com/user-attachments/assets/d41f728a-481f-4f24-a895-b8981ee7f3cc" />

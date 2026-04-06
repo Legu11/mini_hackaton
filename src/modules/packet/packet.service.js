@@ -2,6 +2,7 @@ import db from "../../prisma/client.js"
 
 // créer un packet
 export const addPacket = async (req, res) => {
+    /*
     // vérifier que l'user existe et a les permissions requises
     if (!req.user) {
         return res.status(401).json({ message: "User not found" })
@@ -9,14 +10,14 @@ export const addPacket = async (req, res) => {
     if (req.user.role != "ADMIN" && req.user.role !== "CHEF_DE_PROJET" && req.user.role !== "DEV") {
         return res.status(403).json({ message: "Unauthorized" })
     }
+        */
     // demander le nom, la description, le statut, la priorité
-    const { name, description, statut, priority } = req.body
-    const authorId = 1
+    const { title, description, statut, priority, authorId } = req.body
 
     // créer le packet
     const nouveauPacket = await db.packet.create({
         data: {
-            name,
+            title,
             description,
             statut,
             priority,
@@ -79,7 +80,10 @@ export const getPacketById = async (req, res) => {
     const packetId = req.params.id
     const packet = await db.packet.findUnique({
         where: {
-            id: packetId
+            id: parseInt(packetId)
+        },
+        include: {
+            tickets: true
         }
     })
     // vérifie si le packet n'a pas été trouvé

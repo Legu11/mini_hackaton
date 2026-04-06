@@ -11,7 +11,7 @@ app.use('/users', userRoutes);
 app.use('/tickets', ticketRoutes);
 app.use('/packets', packetRoutes);
 
-
-app.listen(3000, () => {
-  console.log('Server running');
+const PORT = 4000
+app.listen(PORT, '0.0.0.0', () => {
+  console.log('Server running on port ' + PORT);
 });

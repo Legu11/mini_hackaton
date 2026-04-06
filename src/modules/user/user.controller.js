@@ -1,8 +1,9 @@
 import express from "express";
-import { } from "./user.service.js";
+import { getUserById, addUser } from "./user.service.js";
 
 const userRouter = express.Router();
 
-// userRouter.post("/", addUser);
+userRouter.get("/:id", getUserById);
+userRouter.post("/", addUser);
 
 export default userRouter;

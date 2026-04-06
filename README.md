@@ -178,4 +178,3 @@ Voici la liste de permissions :
 
 <img width="241" height="927" alt="Capture d&#39;écran 2026-03-27 091130" src="https://github.com/user-attachments/assets/d41f728a-481f-4f24-a895-b8981ee7f3cc" />
 
-## Document explication de la pipeline CI/CD (pas terminé)

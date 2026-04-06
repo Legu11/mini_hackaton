@@ -1,4 +1,4 @@
-import db from "../prisma/client.js"
+import db from "../../prisma/client.js"
 
 // création du compte lors de la premiere connexion
     // demander username, mail, mot de passe

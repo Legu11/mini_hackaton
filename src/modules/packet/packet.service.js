@@ -1,4 +1,4 @@
-import db from "../prisma/client.js"
+import db from "../../prisma/client.js"
 
 // créer un packet
 export const addPacket = async (req, res) => {
@@ -11,7 +11,7 @@ export const addPacket = async (req, res) => {
     }
     // demander le nom, la description, le statut, la priorité
     const { name, description, statut, priority } = req.body
-    const authorId = req.user.id
+    const authorId = 1
 
     // créer le packet
     const nouveauPacket = await db.packet.create({
@@ -56,15 +56,36 @@ export const removeTicketFromPacket = async (req, res) => {
     if (!packet) {
         return res.status(404).json({ message: "Packet not found" })
     }
-    // retirer le ticket du packet
-    // demander si l'on veut placer le ticket dans un autre packet ou bien le supprimer
+    // placer le ticket dans le packet origin
+    await db.ticket.update({
+        where: {
+            id: ticketId
+        },
+        data: {
+            packetId: 1
+        }
+    })
+    res.status(200).json({ message: "Ticket removed from packet" })
 }
 
 // récuperer les packets
-    // récuperer la liste des packets depuis la DB et les afficher
+export const getAllPackets = async (req, res) => {
+    const packets = await db.packet.findMany()
+    res.json(packets)
+}
 
 // récuperer un packet
-    // récupérer la liste des tickets contenus dans le packet et les afficher
+export const getPacketById = async (req, res) => {
+    const packetId = req.params.id
+    const packet = await db.packet.findUnique({
+        where: {
+            id: packetId
+        }
+    })
+    // vérifie si le packet n'a pas été trouvé
+    if (!packet) {
+        res.status(404).json({ message: "Packet not found" })
+    }
+    res.json(packet)
 
-// récuper la progression
-    // calcule la progression en pourcentage (nombre de tickets resolus / total de tickets * 100)
+}

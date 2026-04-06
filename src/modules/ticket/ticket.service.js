@@ -1,4 +1,4 @@
-import db from "../prisma/client.js"
+import db from "../../prisma/client.js"
 
 // créer un ticket
     // vérifier que l'user existe et qu'il a les permissions nécessaires

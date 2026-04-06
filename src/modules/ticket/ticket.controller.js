@@ -1,8 +1,8 @@
 import express from "express";
-import { addTicket } from "./packet.service.js";
+import { } from "./ticket.service.js";
 
 const ticketRouter = express.Router();
 
-ticketRouter.post("/", addTicket);
+// ticketRouter.post("/", addTicket);
 
 export default ticketRouter;
